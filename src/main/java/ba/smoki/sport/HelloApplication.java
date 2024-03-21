@@ -1,25 +1,29 @@
 package ba.smoki.sport;
 
-import ba.smoki.sport.popup.AlertBox;
-import ba.smoki.sport.popup.ConfirmationBox;
 import ba.smoki.sport.popup.SportPopup;
 import ba.smoki.sport.sport.Sport;
 import ba.smoki.sport.sport.SportDao;
 import javafx.application.Application;
+import javafx.beans.Observable;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableArray;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * <li>1. GUI controls</li>
@@ -40,7 +44,8 @@ public class HelloApplication extends Application {
 
         VBox container = new VBox(20);
         this.sports = loadSports();
-        SportPopup sportPopup = new SportPopup(sports::add);
+        Consumer<Sport> sportConsumer = sport -> sports.add(sport);
+        SportPopup sportPopup = new SportPopup(sportConsumer);
         addSport.setOnAction(e -> sportPopup.display());
 
         TableColumn<Sport, String> nameColumn = new TableColumn<>("Sport Name");
@@ -52,7 +57,7 @@ public class HelloApplication extends Application {
         descriptionColumn.setCellValueFactory(new PropertyValueFactory<Sport, String>("description"));
 
 
-        sportTableView.getColumns().addAll(nameColumn,descriptionColumn);
+        sportTableView.getColumns().addAll(nameColumn, descriptionColumn);
         sportTableView.setItems(sports);
 
         container.getChildren().addAll(addSport, sportTableView);
@@ -65,7 +70,7 @@ public class HelloApplication extends Application {
         stage.show();
     }
 
-    private ObservableList<Sport> loadSports(){
+    private ObservableList<Sport> loadSports() {
         List<Sport> sports = new SportDao().findAll();
         return FXCollections.observableArrayList(sports);
     }
@@ -84,7 +89,20 @@ public class HelloApplication extends Application {
 
 
     public static void main(String[] args) {
-        launch();
+        IntegerProperty xProperty = new SimpleIntegerProperty(23);
+        IntegerProperty yProperty = new SimpleIntegerProperty(32);
+        xProperty.bind(yProperty);
+        yProperty.set(1234);
+        System.out.println("X = " + xProperty.get());
+        System.out.println("Y = " + yProperty.get());
+        yProperty.set(234);
+        System.out.println("X = " + xProperty.get());
+        xProperty.unbind();
+        xProperty.set(23);
+        System.out.println("X => " + xProperty.get());
+        System.out.println("Y => " + yProperty.get());
+
+//        launch();
 //        Sport sport = new Sport();
 //        sport.setName("ŠAH");
 //        SportDao sportDao = new SportDao();
@@ -96,6 +114,19 @@ public class HelloApplication extends Application {
 //        sport.setDescription("Opis");
 //        sport.save();
     }
+
+    private static void printValue(Observable observable) {
+        IntegerProperty integerProperty = (IntegerProperty) observable;
+        System.out.println("Number: " + integerProperty.get());
+    }
+
+    private static void onChangeInteger(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+        System.out.println("OLD: " + oldValue + "  -> NEW: " + newValue);
+    }
+
+//    private static void onChange2(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+//        System.out.println("OLD value: " + oldValue + "  -> NEW value: " + newValue);
+//    }
 
     private class TextFieldInputEvent implements EventHandler<ActionEvent> {
 
